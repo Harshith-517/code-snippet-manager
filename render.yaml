@@ -1,0 +1,6 @@
+{
+    "name": "code-snippet-server",
+    "env": "node",
+    "buildCommand": "cd server && npm install",
+    "startCommand": "cd server && npm start"
+}
