@@ -3,44 +3,65 @@ dotenv.config()
 
 import express from 'express'
 import cors from 'cors'
-import connectDB from './config.js'
+import mongoose from 'mongoose'
 import authRoutes from './routes/auth.js'
 import snippetRoutes from './routes/snippets.js'
 
 const app = express()
 
-// CORS configuration for production
-const corsOptions = {
-  origin: '*',  // Allow all origins temporarily for debugging
-  credentials: true,
-  optionsSuccessStatus: 200
-}
-
-app.use(cors(corsOptions))
+// Basic middleware
 app.use(express.json())
+app.use(cors())
 
-const PORT = process.env.PORT || 5000
-
-// Connect to MongoDB
-connectDB()
-
-// Routes
-app.use('/api/auth', authRoutes)
-app.use('/api/snippets', snippetRoutes)
-
-// Debug route to check environment variables
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Code Snippet Manager API',
-    env: process.env.NODE_ENV,
-    mongoConnected: mongoose.connection.readyState === 1,
-    corsOrigins: corsOptions.origin
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err.stack)
+  res.status(500).json({ 
+    error: 'Internal Server Error',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
   })
 })
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-  console.log('Environment:', process.env.NODE_ENV)
-  console.log('MongoDB URI set:', !!process.env.MONGO_URI)
-  console.log('CLIENT_URL set:', !!process.env.CLIENT_URL)
+const PORT = process.env.PORT || 5000
+
+// Health check route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Code Snippet Manager API is running',
+    env: process.env.NODE_ENV,
+    mongoConnected: mongoose.connection.readyState === 1
+  })
 })
+
+// API routes
+app.use('/api/auth', authRoutes)
+app.use('/api/snippets', snippetRoutes)
+
+// Connect to MongoDB and start server
+const startServer = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI)
+    console.log('Connected to MongoDB')
+    
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`)
+      console.log('Environment:', process.env.NODE_ENV)
+    })
+
+  } catch (error) {
+    console.error('Failed to start server:', error)
+    process.exit(1)
+  }
+}
+
+// MongoDB connection error handling
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err)
+})
+
+mongoose.connection.on('disconnected', () => {
+  console.log('MongoDB disconnected')
+})
+
+// Start the server
+startServer()
