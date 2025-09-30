@@ -11,12 +11,9 @@ const app = express()
 
 // CORS configuration for production
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://code-snippet-manager-gamma.vercel.app']
-    : ['http://localhost:5173', 'http://localhost:3000'],
+  origin: '*',  // Allow all origins temporarily for debugging
   credentials: true,
-  optionsSuccessStatus: 200,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  optionsSuccessStatus: 200
 }
 
 app.use(cors(corsOptions))
@@ -27,35 +24,23 @@ const PORT = process.env.PORT || 5000
 // Connect to MongoDB
 connectDB()
 
-// Debug middleware
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok',
-    time: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
-    cors: corsOptions
-  })
-})
-
-// Request logging
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`)
-  next()
-})
-
 // Routes
 app.use('/api/auth', authRoutes)
 app.use('/api/snippets', snippetRoutes)
 
-// Error handling
-app.use((err, req, res, next) => {
-  console.error('Error:', err)
-  res.status(500).json({ 
-    error: err.message || 'Internal server error',
-    path: req.path
+// Debug route to check environment variables
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Code Snippet Manager API',
+    env: process.env.NODE_ENV,
+    mongoConnected: mongoose.connection.readyState === 1,
+    corsOrigins: corsOptions.origin
   })
 })
 
-app.get('/', (req, res) => res.send('Code Snippet Manager API'))
-
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+  console.log('Environment:', process.env.NODE_ENV)
+  console.log('MongoDB URI set:', !!process.env.MONGO_URI)
+  console.log('CLIENT_URL set:', !!process.env.CLIENT_URL)
+})
