@@ -2,7 +2,7 @@
   "name": "code-snippet-manager",
   "version": "1.0.0",
   "description": "A collaborative code snippet manager built with MERN stack",
-  "author": "Your Name",
+  "author": "Harshith Anchuri",
   "license": "MIT",
   "keywords": [
     "code-snippets",
@@ -13,7 +13,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/code-snippet-manager.git"
+    "url": "https://github.com/Harshith-517/code-snippet-manager"
   },
   "dependencies": {
     "crypto": "^1.0.1",
