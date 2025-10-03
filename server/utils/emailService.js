@@ -7,30 +7,20 @@ dotenv.config()
 
 // Create transporter function to ensure env vars are loaded
 const createTransporter = () => {
-  console.log('Creating transporter with:')
-  console.log('EMAIL_USER:', process.env.EMAIL_USER)
-  console.log('EMAIL_APP_PASSWORD:', process.env.EMAIL_APP_PASSWORD ? '***SET***' : 'NOT SET')
+  console.log('Creating Resend transporter...')
   
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
-    throw new Error('Email credentials not found in environment variables')
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('Resend API key not found in environment variables')
   }
   
   return nodemailer.createTransport({
-    service: 'gmail',
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
+    host: 'smtp.resend.com',
+    port: 465,
+    secure: true,
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_APP_PASSWORD
-    },
-    // Add timeout settings
-    tls: {
-      rejectUnauthorized: false
-    },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 5000,    // 5 seconds
-    socketTimeout: 10000      // 10 seconds
+      user: 'resend',
+      pass: process.env.RESEND_API_KEY
+    }
   })
 }
 
@@ -39,8 +29,12 @@ export const generateOTP = () => {
 }
 
 export const sendVerificationEmail = async (email, otp) => {
+  console.log('Sending verification email to:', email);
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: {
+      name: 'Code Snippet Manager',
+      address: process.env.RESEND_FROM_EMAIL
+    },
     to: email,
     subject: 'Email Verification - Code Snippet Manager',
     html: `
@@ -65,20 +59,42 @@ export const sendVerificationEmail = async (email, otp) => {
   }
 
   try {
-    const transporter = createTransporter()
-    await transporter.sendMail(mailOptions)
-    return true
+    console.log('Setting up email with options:', {
+      to: email,
+      from: process.env.RESEND_FROM_EMAIL,
+      subject: mailOptions.subject
+    });
+
+    const transporter = createTransporter();
+    const info = await transporter.sendMail(mailOptions);
+    
+    console.log('Email sent successfully:', {
+      messageId: info.messageId,
+      to: email
+    });
+    
+    return true;
   } catch (error) {
-    console.error('Email sending error:', error)
-    return false
+    console.error('Email sending error details:', {
+      error: error.message,
+      code: error.code,
+      command: error.command,
+      response: error.response,
+      responseCode: error.responseCode
+    });
+    throw error;
   }
 }
 
 export const sendPasswordResetEmail = async (email, resetToken) => {
   const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`
-
+  console.log('Sending password reset email to:', email);
+  
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: {
+      name: 'Code Snippet Manager',
+      address: process.env.RESEND_FROM_EMAIL
+    },
     to: email,
     subject: 'Password Reset - Code Snippet Manager',
     html: `
