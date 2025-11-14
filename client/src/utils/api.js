@@ -14,4 +14,12 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// Get the base URL without the /api suffix for image URLs
+export const getBaseUrl = () => {
+  const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const baseUrlForImages = baseURL.replace(/\/api$/, ''); // Remove /api if it exists at the end
+  console.log('API Utility: Base URL for images:', baseUrlForImages);
+  return baseUrlForImages;
+}
+
 export default api

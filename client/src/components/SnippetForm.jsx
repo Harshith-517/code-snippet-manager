@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import api from '../utils/api'
-import Toast from './Toast'
+import toast from 'react-hot-toast'
 
 export default function SnippetForm({ snippet, onSave, onCancel }) {
   const [title, setTitle] = useState(snippet?.title || '')
@@ -11,7 +11,7 @@ export default function SnippetForm({ snippet, onSave, onCancel }) {
   const [isPublic, setIsPublic] = useState(snippet?.isPublic !== false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [showSuccessToast, setShowSuccessToast] = useState(false)
+  // Removed showSuccessToast state as we'll use react-hot-toast
 
   // Check if this is a collaborative edit (public snippet by someone else)
   const token = localStorage.getItem('token')
@@ -95,7 +95,9 @@ export default function SnippetForm({ snippet, onSave, onCancel }) {
 
       // Show success toast for collaborative edits
       if (isCollaborativeEdit || isAnonymousEdit) {
-        setShowSuccessToast(true)
+        toast.success('🎉 Collaborative edit saved! Your improvements are now live for everyone.', {
+          icon: '🌐',
+        })
       }
 
       // Call parent callback if provided
@@ -108,7 +110,9 @@ export default function SnippetForm({ snippet, onSave, onCancel }) {
       
     } catch (err) {
       console.error('Save snippet error:', err)
-      setError(err.response?.data?.message || 'Failed to save snippet')
+      const errorMessage = err.response?.data?.message || 'Failed to save snippet';
+      setError(errorMessage)
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -116,23 +120,15 @@ export default function SnippetForm({ snippet, onSave, onCancel }) {
 
   return (
     <div>
-      {/* Success Toast */}
-      {showSuccessToast && (
-        <Toast 
-          message="🎉 Collaborative edit saved! Your improvements are now live for everyone."
-          type="success"
-          onClose={() => setShowSuccessToast(false)}
-        />
-      )}
 
       {/* Collaborative Editing Notice */}
       {(isCollaborativeEdit || isAnonymousEdit) && (
-        <div className="mb-4 p-4 bg-blue-900/30 border border-blue-700 rounded-lg">
+        <div className="mb-4 p-4 bg-blue-50/50 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-lg transition-colors">
           <div className="flex items-center space-x-2">
             <span className="text-2xl">🌐</span>
             <div>
-              <h4 className="text-blue-300 font-medium">Collaborative Editing</h4>
-              <p className="text-sm text-blue-200">
+              <h4 className="text-blue-700 dark:text-blue-300 font-medium transition-colors">Collaborative Editing</h4>
+              <p className="text-sm text-blue-600 dark:text-blue-200 transition-colors">
                 You're editing a public snippet! Your changes will be visible to everyone and help improve this snippet for the community.
               </p>
             </div>
@@ -142,41 +138,41 @@ export default function SnippetForm({ snippet, onSave, onCancel }) {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-        <div className="text-red-400 p-3 bg-red-900/20 border border-red-800 rounded-lg">
+        <div className="text-red-600 dark:text-red-400 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg transition-colors">
           {error}
         </div>
       )}
 
       <div>
-        <label className="block text-sm text-gray-300 mb-1">Title *</label>
+        <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1 transition-colors">Title *</label>
         <input 
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Enter snippet title..." 
           required
-          className="w-full p-3 border border-gray-600 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
+          className="w-full p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" 
         />
       </div>
 
       <div>
-        <label className="block text-sm text-gray-300 mb-1">Description</label>
+        <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1 transition-colors">Description</label>
         <input 
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Brief description..." 
-          className="w-full p-3 border border-gray-600 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
+          className="w-full p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" 
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm text-gray-300 mb-1">Language</label>
+          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1 transition-colors">Language</label>
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="w-full p-3 border border-gray-600 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            className="w-full p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
           >
             {languages.map(lang => (
               <option key={lang} value={lang}>
@@ -187,26 +183,26 @@ export default function SnippetForm({ snippet, onSave, onCancel }) {
         </div>
 
         <div>
-          <label className="block text-sm text-gray-300 mb-1">Tags (comma separated)</label>
+          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1 transition-colors">Tags (comma separated)</label>
           <input 
             type="text"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
             placeholder="react, hooks, utility..." 
-            className="w-full p-3 border border-gray-600 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
+            className="w-full p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" 
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm text-gray-300 mb-1">Code *</label>
+        <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1 transition-colors">Code *</label>
         <textarea 
           value={code}
           onChange={(e) => setCode(e.target.value)}
           placeholder="Paste your code here..." 
           required
           rows={8}
-          className="w-full p-3 border border-gray-600 bg-gray-900 text-green-400 font-mono rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
+          className="w-full p-3 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-green-700 dark:text-green-400 font-mono rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" 
         />
       </div>
 
@@ -216,9 +212,9 @@ export default function SnippetForm({ snippet, onSave, onCancel }) {
           id="isPublic"
           checked={isPublic}
           onChange={(e) => setIsPublic(e.target.checked)}
-          className="mr-2 w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+          className="mr-2 w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 transition-colors"
         />
-        <label htmlFor="isPublic" className="text-sm text-gray-300">
+        <label htmlFor="isPublic" className="text-sm text-gray-700 dark:text-gray-300 transition-colors">
           Make this snippet public (others can view it)
         </label>
       </div>
@@ -228,7 +224,7 @@ export default function SnippetForm({ snippet, onSave, onCancel }) {
           <button
             type="button"
             onClick={onCancel}
-            className="px-6 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition"
+            className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             Cancel
           </button>
@@ -236,7 +232,7 @@ export default function SnippetForm({ snippet, onSave, onCancel }) {
         <button 
           type="submit"
           disabled={loading}
-          className={`px-6 py-2 rounded-lg transition flex items-center gap-2 ${
+          className={`px-6 py-2 rounded-lg transition-colors flex items-center gap-2 ${
             loading 
               ? 'bg-blue-400 cursor-not-allowed' 
               : 'bg-blue-600 hover:bg-blue-700'

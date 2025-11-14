@@ -28,7 +28,7 @@ export default function OTPVerificationPage() {
       }, 100)
     } else {
       // If no contact info, redirect to signup
-      navigate('/signup')
+      navigate('/signin')
     }
   }, [location, navigate])
 
@@ -90,8 +90,14 @@ export default function OTPVerificationPage() {
         email: contact, 
         otp: otpString
       })
-      localStorage.setItem('token', res.data.token)
-      navigate('/dashboard')
+      // Instead of storing token and redirecting to dashboard,
+      // redirect to login page with a success message
+      navigate('/signin', { 
+        state: { 
+          verificationSuccess: true,
+          email: contact 
+        }
+      })
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid OTP')
     } finally {
@@ -167,7 +173,7 @@ export default function OTPVerificationPage() {
 
         <div className="mt-4 text-center">
           <button
-            onClick={() => navigate('/signup')}
+            onClick={() => navigate('/signin')}
             className="text-sm text-gray-400 hover:text-gray-300"
           >
             ← Back to Sign Up

@@ -8,7 +8,7 @@ import {
   deleteSnippet,
   searchSnippets,
 } from '../controllers/snippetController.js'
-import authMiddleware from '../middleware/authMiddleware.js'
+import { authenticate } from '../middleware/authMiddleware.js'
 
 const router = express.Router()
 
@@ -17,7 +17,7 @@ const optionalAuth = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1]
   if (token) {
     // If token exists, use auth middleware
-    authMiddleware(req, res, next)
+    authenticate(req, res, next)
   } else {
     // If no token, continue without user info
     req.user = null
@@ -36,6 +36,6 @@ router.put('/:id', optionalAuth, updateSnippet) // Edit own snippets
 router.delete('/:id', optionalAuth, deleteSnippet) // Delete own snippets
 
 // Protected routes (require authentication)
-router.get('/me/snippets', authMiddleware, getMySnippets) // Get user's own snippets
+router.get('/me/snippets', authenticate, getMySnippets) // Get user's own snippets
 
 export default router
