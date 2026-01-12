@@ -843,14 +843,9 @@ You might need to add a policy like this:
         console.log('Adding profile image to update data:', profileImageUrl);
       }
       
-      // Choose the appropriate endpoint based on image source
-      let endpoint = '/users/profile';
-      if (profileImageUrl && imageUploadSuccess && profileImageUrl.startsWith('http')) {
-        endpoint = '/users/profile-external';
-      }
-      
-      console.log(`Using ${endpoint} endpoint for profile update`);
-      const { data } = await api.put(endpoint, profileData);
+      // Update profile using the single /users/profile endpoint
+      console.log('Updating profile via /users/profile endpoint');
+      const { data } = await api.put('/users/profile', profileData);
       console.log('Profile update response:', data);
       
       // Step 3: Update local state with the response
